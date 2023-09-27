@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _loggin() async {
     LoadingProgress.start(context);
-    await Future.delayed(const Duration(seconds: 3));
+    // await Future.delayed(const Duration(seconds: 3));
     String username = userNameController.text;
     String password = passwordController.text;
     authenticationService.login(username, password).then((res) async {
@@ -47,14 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
         final SharedPreferences sp = await SharedPreferences.getInstance();
         print(body);
         sp.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
+        LoadingProgress.stop(context);
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const MainApp()),
             (route) => false);
       } else {
         print("Login fail");
+        LoadingProgress.stop(context);
       }
-      // LoadingProgress.stop(context);
     });
   }
 
