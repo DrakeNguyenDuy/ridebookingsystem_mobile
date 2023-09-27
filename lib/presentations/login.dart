@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:loading_progress/loading_progress.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
 import 'package:ride_booking_system/common/share_preferences.dart';
 import 'package:ride_booking_system/core/constants/constants/assets_images.dart';
@@ -28,14 +29,16 @@ class _LoginScreenState extends State<LoginScreen> {
   // bool _isLogged = false;
   final userNameController = TextEditingController();
   final passwordController = TextEditingController();
-  AuthenticationService authenticationService = new AuthenticationService();
+  AuthenticationService authenticationService = AuthenticationService();
   @override
   void initState() {
     // SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
     super.initState();
   }
 
-  void _loggin() {
+  void _loggin() async {
+    LoadingProgress.start(context);
+    await Future.delayed(const Duration(seconds: 3));
     String username = userNameController.text;
     String password = passwordController.text;
     authenticationService.login(username, password).then((res) async {
@@ -51,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         print("Login fail");
       }
+      // LoadingProgress.stop(context);
     });
   }
 
