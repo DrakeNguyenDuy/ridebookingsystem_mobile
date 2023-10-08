@@ -43,6 +43,7 @@ dependencies:
   google_maps_flutter: ^2.3.0
   shared_preferences: ^2.1.0
   loading_progress: ^1.0.2
+  lottie: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +76,7 @@ flutter:
     - assets/images/
     - assets/images/logo/
     - assets/images/watermask/
+    - assets/images/imagejson/
     - assets/fonts/montserrat/static/
 
   # An image asset can refer to one or more resolution-specific "variants", see

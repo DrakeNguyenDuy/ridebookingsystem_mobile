@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:ride_booking_system/core/constants/constants/assets_images.dart';
-import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
-import 'package:ride_booking_system/core/init/main_screen_init.dart';
-import 'package:ride_booking_system/core/style/main_style.dart';
-import 'package:ride_booking_system/core/style/text_style.dart';
-import 'package:ride_booking_system/core/widgets/category.dart';
-import 'package:ride_booking_system/core/widgets/catgory_item.dart';
 
 class HomeScreen extends StatefulWidget {
+  // static String routeName = "/home";
   const HomeScreen({super.key});
 
   @override

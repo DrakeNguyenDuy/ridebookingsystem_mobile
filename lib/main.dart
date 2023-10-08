@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ride_booking_system/core/constants/constants/variables.dart';
+import 'package:ride_booking_system/presentations/flash_screen.dart';
 import 'package:ride_booking_system/presentations/login.dart';
 import 'package:ride_booking_system/routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -40,9 +41,7 @@ class MyApp extends StatelessWidget {
         // ),
         primarySwatch: Colors.blue,
       ),
-      home: const LoginScreen(
-        title: '',
-      ),
+      home: const FlashScreen(),
       routes: routes,
     );
   }

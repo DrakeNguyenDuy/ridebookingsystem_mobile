@@ -7,22 +7,23 @@ import 'package:ride_booking_system/data/model/item_small_model.dart';
 
 //list bottom navbar item
 List<BottomNavBarItemModel> listItemNavbar = [
-  BottomNavBarItemModel(icon: Icons.newspaper, nameItem: "Tin tức"),
+  BottomNavBarItemModel(icon: Icons.directions_car, nameItem: "Home"),
   BottomNavBarItemModel(
-    icon: Icons.task,
-    nameItem: "L",
+    icon: Icons.history,
+    nameItem: "History",
   ),
   BottomNavBarItemModel(
-    icon: Icons.home,
-    nameItem: "Trang chủ",
+    icon: Icons.wallet,
+    nameItem: "Wallet",
   ),
+  // BottomNavBarItemModel(
+  //   icon: Icons.developer_board,
+  //   nameItem: "Đề xuất",
+  // )
+  // ,
   BottomNavBarItemModel(
-    icon: Icons.developer_board,
-    nameItem: "Đề xuất",
-  ),
-  BottomNavBarItemModel(
-    icon: Icons.settings_suggest,
-    nameItem: "Cá nhân",
+    icon: Icons.person,
+    nameItem: "Personal",
   )
 ];
 //list short cut
