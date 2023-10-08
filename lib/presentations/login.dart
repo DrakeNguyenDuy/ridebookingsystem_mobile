@@ -1,25 +1,23 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:loading_progress/loading_progress.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
-import 'package:ride_booking_system/common/share_preferences.dart';
 import 'package:ride_booking_system/core/constants/constants/assets_images.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
 import 'package:ride_booking_system/core/constants/constants/dimension_constanst.dart';
 import 'package:ride_booking_system/core/constants/constants/font_size_constanst.dart';
 import 'package:ride_booking_system/core/constants/constants/variables.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
-import 'package:ride_booking_system/core/widgets/input_label.dart';
+import 'package:ride_booking_system/core/utils/handle_message.dart';
+import 'package:ride_booking_system/core/widgets/text_field_widget.dart';
 import 'package:ride_booking_system/presentations/main_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, required this.title});
+  const LoginScreen({super.key});
   static const String routeName = "/login";
-  final String title;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -29,6 +27,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // bool _isLogged = false;
   final userNameController = TextEditingController();
   final passwordController = TextEditingController();
+  final HandleMessage _handleMessage = HandleMessage();
+  String dataFromChild = "";
   AuthenticationService authenticationService = AuthenticationService();
   @override
   void initState() {
@@ -36,25 +36,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
+  void onDataFromChild(String data) {
+    setState(() {
+      dataFromChild = data;
+      print(data);
+    });
+  }
+
   void _loggin() async {
-    LoadingProgress.start(context);
-    // await Future.delayed(const Duration(seconds: 3));
+    // LoadingProgress.start(context);
     String username = userNameController.text;
     String password = passwordController.text;
+    final SharedPreferences sp = await SharedPreferences.getInstance();
     authenticationService.login(username, password).then((res) async {
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
         final SharedPreferences sp = await SharedPreferences.getInstance();
         print(body);
-        sp.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
+        // sp.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
+        sp.setString("key", "đ");
         LoadingProgress.stop(context);
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const MainApp()),
             (route) => false);
       } else {
-        print("Login fail");
-        LoadingProgress.stop(context);
+        _handleMessage.showToast(
+            context, "Username or Password incorrect!", null);
       }
     });
   }
@@ -65,71 +73,74 @@ class _LoginScreenState extends State<LoginScreen> {
         resizeToAvoidBottomInset: false,
         backgroundColor: ColorPalette.white,
         body: SafeArea(
-          child: Container(
-            margin: const EdgeInsets.all(ds_3),
+          child: Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               children: [
-                Container(
-                    padding: EdgeInsets.fromLTRB(ds_0, ds_3, ds_0, ds_0),
-                    child: Image.asset(
-                      AssetImages.login,
-                      height: MediaQuery.of(context).size.height / 3,
-                    )),
                 Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(1),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              "LOGIN",
-                              style: MainStyle.textStyle1.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: fs_2 * 2),
-                              textAlign: TextAlign.center,
-                            ),
-                            // Text(
-                            //   "Hãy Đăng Nhập Trước Nhé",
-                            //   style: MainStyle.textStyle1.copyWith(
-                            //       fontWeight: FontWeight.normal, fontSize: fs_1),
-                            //   textAlign: TextAlign.center,
-                            // )
-                          ],
-                        ),
-                      ),
-                      Container(
-                          margin: const EdgeInsets.only(top: ds_3),
-                          child: InputLable(
-                            nameLable: "Email",
-                            controller: userNameController,
-                          )),
-                      Container(
-                          margin: const EdgeInsets.only(top: ds_3),
-                          child: InputLable(
-                            nameLable: "Mật khẩu",
-                            typePassword: true,
-                            controller: passwordController,
-                          )),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorPalette.primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 15)),
-                        onPressed: _loggin,
-                        child: Text(
-                          "Login",
-                          style: MainStyle.textStyle5,
-                        ),
-                      )
-                    ],
+                  child: Image.asset(
+                    AssetImages.login,
+                    height: MediaQuery.of(context).size.height / 3,
                   ),
-                )
+                ),
+                Expanded(
+                    child: Column(
+                  children: [
+                    Text(
+                      "Let's First Go Login",
+                      style: MainStyle.textStyle1.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: fs_3 * 2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    TextFieldWidget(
+                      nameLable: "User Name",
+                      controller: userNameController,
+                    ),
+                    TextFieldWidget(
+                      nameLable: "Password",
+                      controller: passwordController,
+                      typePassword: true,
+                    ),
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height / 18,
+                        margin:
+                            const EdgeInsets.fromLTRB(ds_1, ds_1, ds_1, ds_1),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorPalette.primaryColor,
+                            // padding: const EdgeInsets.all(15.0),
+                          ),
+                          onPressed: _loggin,
+                          child: Text(
+                            "Login",
+                            style: MainStyle.textStyle5,
+                          ),
+                        )),
+                    Text(
+                      "Forgot password",
+                      style: MainStyle.textStyle5.copyWith(
+                        color: ColorPalette.primaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                )),
+                // Expanded(child: null)
               ],
             ),
           ),
         ));
+  }
+
+  @override
+  void dispose() {
+    userNameController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }
 
