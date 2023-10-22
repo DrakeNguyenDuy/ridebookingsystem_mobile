@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
-import 'package:ride_booking_system/core/constants/constants/dimension_constanst.dart';
 import 'package:ride_booking_system/core/init/main_screen_init.dart';
 import 'package:ride_booking_system/core/widgets/bottom_nav_bar_item.dart';
 
@@ -35,9 +34,9 @@ class _BottomBarState extends State<BottomBar> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(borderRadiusBigger),
-          topRight: Radius.circular(borderRadiusBigger)),
+      // borderRadius: const BorderRadius.only(
+      //     topLeft: Radius.circular(borderRadiusBigger),
+      //     topRight: Radius.circular(borderRadiusBigger)),
       child: Container(
         color: ColorPalette.primaryColor,
         height: MediaQuery.of(context).size.height / 12,

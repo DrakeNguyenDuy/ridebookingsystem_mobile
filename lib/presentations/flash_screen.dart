@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
-import 'package:ride_booking_system/core/constants/constants/variables.dart';
-import 'package:ride_booking_system/core/style/main_style.dart';
-import 'package:ride_booking_system/presentations/home_screen.dart';
+import 'package:ride_booking_system/core/constants/variables.dart';
+import 'package:ride_booking_system/core/widgets/loading.dart';
 import 'package:ride_booking_system/presentations/login.dart';
 import 'package:ride_booking_system/presentations/main_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,34 +22,23 @@ class _FlashScreenState extends State<FlashScreen> {
 
   void redirectToIntro() async {
     final SharedPreferences sp = await SharedPreferences.getInstance();
-    Object? accessToken = sp.get(Varibales.ACCESS_TOKEN);
-    await Future.delayed(const Duration(seconds: 2));
+    String? accessToken = sp.getString(Varibales.ACCESS_TOKEN);
+    // await Future.delayed(const Duration(seconds: 2));
     if (accessToken == null) {
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
           (route) => false);
     } else {
-      Navigator.of(context).pushNamed(MainApp.routeName);
+      Navigator.pushAndRemoveUntil(context,
+          MaterialPageRoute(builder: (_) => const MainApp()), (route) => false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Center(
-            child: Column(
-              children: [
-                Expanded(
-                    child: Lottie.asset(
-                        "assets/images/imagejson/flash_screen.json")),
-              ],
-            ),
-          )
-        ],
-      ),
+    return const Scaffold(
+      body: LoadingWidget(),
     );
   }
 }

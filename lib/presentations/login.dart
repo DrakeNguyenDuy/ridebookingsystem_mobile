@@ -2,16 +2,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_progress/loading_progress.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
 import 'package:ride_booking_system/core/constants/constants/assets_images.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
 import 'package:ride_booking_system/core/constants/constants/dimension_constanst.dart';
 import 'package:ride_booking_system/core/constants/constants/font_size_constanst.dart';
-import 'package:ride_booking_system/core/constants/constants/variables.dart';
+import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
-import 'package:ride_booking_system/core/utils/handle_message.dart';
 import 'package:ride_booking_system/core/widgets/text_field_widget.dart';
+import 'package:ride_booking_system/data/model/Personal.dart';
 import 'package:ride_booking_system/presentations/main_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,8 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
   // bool _isLogged = false;
   final userNameController = TextEditingController();
   final passwordController = TextEditingController();
-  final HandleMessage _handleMessage = HandleMessage();
-  String dataFromChild = "";
   AuthenticationService authenticationService = AuthenticationService();
   @override
   void initState() {
@@ -36,35 +35,60 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
   }
 
-  void onDataFromChild(String data) {
-    setState(() {
-      dataFromChild = data;
-      print(data);
-    });
-  }
-
   void _loggin() async {
-    // LoadingProgress.start(context);
-    String username = userNameController.text;
-    String password = passwordController.text;
-    final SharedPreferences sp = await SharedPreferences.getInstance();
+    LoadingProgress.start(context);
+    var username = userNameController.text;
+    var password = passwordController.text;
     authenticationService.login(username, password).then((res) async {
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        final SharedPreferences sp = await SharedPreferences.getInstance();
-        print(body);
-        // sp.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
-        sp.setString("key", "đ");
+        String statusCode = body['status'];
+        if (statusCode.compareTo("ERROR") == 0) {
+          LoadingProgress.stop(context);
+          Fluttertoast.showToast(
+              backgroundColor: Colors.amberAccent,
+              msg: body['data']['message'],
+              webPosition: "top");
+        }
+        var userInfo = body['data']['userInfo'];
+        PersonalInfor personalInfor = mapperJson2Model(userInfo);
+        // final SharedPreferences sp =
+        await SharedPreferences.getInstance().then((ins) {
+          ins.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
+          ins.setString(
+              Varibales.PERSONAL_INFO, jsonEncode(personalInfor.toString()));
+        });
         LoadingProgress.stop(context);
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const MainApp()),
             (route) => false);
       } else {
-        _handleMessage.showToast(
-            context, "Username or Password incorrect!", null);
+        LoadingProgress.stop(context);
+        Fluttertoast.showToast(
+            msg: "Username or Password incorrect!", webPosition: "top");
+        // LoadingProgress.stop(context);
       }
     });
+    // Navigator.pushAndRemoveUntil(context,
+    //     MaterialPageRoute(builder: (_) => const MainApp()), (route) => false);
+  }
+
+  PersonalInfor mapperJson2Model(dynamic userInfoJson) {
+    return PersonalInfor(
+      userInfoJson["personModel"]["personId"],
+      userInfoJson["personModel"]["name"],
+      userInfoJson["personModel"]["gender"],
+      userInfoJson["personModel"]["phoneNumber"],
+      userInfoJson["personModel"]["email"],
+      userInfoJson["personModel"]["address"],
+      userInfoJson["personModel"]["citizenId"],
+      userInfoJson["personModel"]["avatar"],
+      userInfoJson["username"],
+      userInfoJson["enabled"],
+      userInfoJson["roleModel"]["roleId"],
+      userInfoJson["roleModel"]["name"],
+    );
   }
 
   @override

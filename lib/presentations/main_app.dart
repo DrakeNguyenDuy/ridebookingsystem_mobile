@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ride_booking_system/core/widgets/bottom_bar.dart';
+import 'package:ride_booking_system/presentations/history.dart';
 import 'package:ride_booking_system/presentations/home_screen.dart';
 import 'package:ride_booking_system/presentations/personal.dart';
+import 'package:ride_booking_system/presentations/wallet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MainApp extends StatefulWidget {
@@ -34,8 +36,8 @@ class _MainAppState extends State<MainApp> {
 
   final listScreen = [
     const HomeScreen(),
-    const HomeScreen(),
-    const HomeScreen(),
+    const HistoryScreen(),
+    const WalletScreen(),
     const PersonalScreen(),
   ];
 
