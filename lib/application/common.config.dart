@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class CommonConfig {
   static String ipAddress = "ridebookingsystem.ddns.net:9090";
-  static String API_GOOGLE_KEY = "AIzaSyC0qt7fINqoBuw6la_6nX634a4DJnO8pQc";
+  static String API_GOOGLE_KEY = "AIzaSyBCGvOLZ6WHQRTeoyzjbKqw4j2OW9-5akU";
   static Map<String, String> header = {
     "content-type": "application/json",
     "accept": "application/json",

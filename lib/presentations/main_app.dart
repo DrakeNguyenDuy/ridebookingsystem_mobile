@@ -17,7 +17,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    redirectToIntro();
+    // redirectToIntro();
   }
 
   int _currentIndex = 0;
@@ -29,10 +29,10 @@ class _MainAppState extends State<MainApp> {
     });
   }
 
-  void redirectToIntro() async {
-    final SharedPreferences sp = await SharedPreferences.getInstance();
-    sp.clear();
-  }
+  // void redirectToIntro() async {
+  //   final SharedPreferences sp = await SharedPreferences.getInstance();
+  //   sp.clear();
+  // }
 
   final listScreen = [
     const HomeScreen(),

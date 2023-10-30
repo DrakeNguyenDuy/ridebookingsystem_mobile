@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   PersonalInfor mapperJson2Model(dynamic userInfoJson) {
     return PersonalInfor(
-      userInfoJson["personModel"]["personId"],
+      userInfoJson["personModel"]["userId"],
       userInfoJson["personModel"]["name"],
       userInfoJson["personModel"]["gender"],
       userInfoJson["personModel"]["phoneNumber"],

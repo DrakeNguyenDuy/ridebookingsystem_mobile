@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:ride_booking_system/application/common.config.dart';
+import 'package:ride_booking_system/application/google_service.dart';
+import 'package:ride_booking_system/application/main_app_service.dart';
 import 'package:ride_booking_system/core/widgets/loading.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,9 +21,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late final FirebaseMessaging _messaging;
   final double zoom = 17.0;
+  double price = 0;
   late GoogleMapController mapController;
   final Location _locationController = Location();
+  GoogleService googleService = GoogleService();
+  MainAppService mainAppService = MainAppService();
 
   Map<PolylineId, Polyline> polylinesMap = {};
 
@@ -37,8 +47,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance?.addPostFrameCallback((_) {
+    //   _getPrice();
+    //   order(this.context);
+    // });
     getLocation().then((_) => getPolyPoint()
         .then((coordinates) => {generatePolylineFromPoints(coordinates)}));
+    registerNotification();
   }
 
   Future<void> getLocation() async {
@@ -103,11 +118,52 @@ class _HomeScreenState extends State<HomeScreen> {
     PolylineId polylineId = PolylineId("d");
     Polyline polyline = Polyline(
         polylineId: polylineId,
-        color: Colors.black,
+        color: Colors.blue,
         points: polylineCoordinates,
         width: 8);
     setState(() {
       polylinesMap[polylineId] = polyline;
+    });
+  }
+
+  void order(BuildContext context) async {
+    Widget okButton = TextButton(
+      child: const Text("OK"),
+      onPressed: () {},
+    );
+    _getPrice();
+    showDialog(
+        context: context,
+        builder: (BuildContext buildContext) {
+          return AlertDialog(
+            title: const Text("Đặt xe"),
+            content: Text("Gía cước: $price"),
+            actions: [okButton],
+          );
+        });
+  }
+
+  //get price by distance
+  void _getPrice() async {
+    // googleService
+    //     .getDistance(l1.latitude, l1.longitude, l2.latitude, l2.longitude)
+    //     .then((res1) async {
+    //   print(res1);
+    //   if (res1.statusCode == 200) {
+    //     final body = jsonDecode(res1.body);
+    //     double destination =
+    //         body["rows"]["elements"]["distance"]["value"] / 1000;
+    //     print(destination);
+    //   }
+    // });
+    mainAppService.getPrice(4.4).then((res2) async {
+      if (res2.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res2.body);
+        setState(() {
+          price = body["data"];
+          print(price);
+        });
+      }
     });
   }
 
@@ -120,6 +176,14 @@ class _HomeScreenState extends State<HomeScreen> {
         colorSchemeSeed: Colors.green[700],
       ),
       home: Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            order(context);
+          },
+          child: Text("ĐẶT XE"),
+          backgroundColor: Colors.amberAccent,
+        ),
         body: _currentLocation == null
             ? const LoadingWidget()
             : GoogleMap(
@@ -144,5 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
       ),
     );
+  }
+
+  void registerNotification() async {
+    await Firebase.initializeApp();
+    // 2. Instantiate Firebase Messaging
+    _messaging = FirebaseMessaging.instance;
+    _messaging.getToken().then((value) {
+      print(value);
+    });
   }
 }
