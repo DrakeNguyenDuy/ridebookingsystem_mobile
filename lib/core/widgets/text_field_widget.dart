@@ -9,7 +9,7 @@ class TextFieldWidget extends StatelessWidget {
   final bool typePassword;
   final IconData? iconData;
   final TextEditingController? controller;
-  TextFieldWidget(
+  const TextFieldWidget(
       {super.key,
       required this.nameLable,
       this.typePassword = false,

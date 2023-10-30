@@ -8,7 +8,7 @@ class InputLable extends StatelessWidget {
   final String? nameLable;
   final bool typePassword;
   final TextEditingController? controller;
-  InputLable(
+  const InputLable(
       {super.key,
       @required this.nameLable,
       this.typePassword = false,
@@ -52,6 +52,5 @@ class InputLable extends StatelessWidget {
         ),
       ],
     );
-    ;
   }
 }

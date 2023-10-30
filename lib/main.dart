@@ -1,22 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:ride_booking_system/core/constants/constants/variables.dart';
 import 'package:ride_booking_system/presentations/flash_screen.dart';
-import 'package:ride_booking_system/presentations/login.dart';
 import 'package:ride_booking_system/routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Required by FlutterConfig
   // await FlutterConfig.loadEnvVariables();
-  bool isLogin = await isLogged();
-  runApp(MyApp());
-}
-
-Future<bool> isLogged() async {
-  final SharedPreferences sp = await SharedPreferences.getInstance();
-  String? accessToken = sp.getString(Varibales.ACCESS_TOKEN);
-  return accessToken == null;
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -26,7 +16,6 @@ class MyApp extends StatelessWidget {
   @override
   MaterialApp build(BuildContext context) {
     return MaterialApp(
-      title: 'Ride Booking',
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
       localizationsDelegates: const [
