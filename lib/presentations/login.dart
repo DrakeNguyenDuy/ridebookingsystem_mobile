@@ -12,7 +12,6 @@ import 'package:ride_booking_system/core/constants/constants/font_size_constanst
 import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
 import 'package:ride_booking_system/core/widgets/text_field_widget.dart';
-import 'package:ride_booking_system/data/model/Personal.dart';
 import 'package:ride_booking_system/presentations/main_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,7 +24,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // bool _isLogged = false;
   final userNameController = TextEditingController();
   final passwordController = TextEditingController();
   AuthenticationService authenticationService = AuthenticationService();
@@ -51,12 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
               webPosition: "top");
         }
         var userInfo = body['data']['userInfo'];
-        PersonalInfor personalInfor = mapperJson2Model(userInfo);
         // final SharedPreferences sp =
         await SharedPreferences.getInstance().then((ins) {
           ins.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
-          ins.setString(
-              Varibales.PERSONAL_INFO, jsonEncode(personalInfor.toString()));
+          ins.setInt(Varibales.CUSTOMER_ID, userInfo["personModel"]["userId"]);
         });
         LoadingProgress.stop(context);
         Navigator.pushAndRemoveUntil(
@@ -72,23 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     // Navigator.pushAndRemoveUntil(context,
     //     MaterialPageRoute(builder: (_) => const MainApp()), (route) => false);
-  }
-
-  PersonalInfor mapperJson2Model(dynamic userInfoJson) {
-    return PersonalInfor(
-      userInfoJson["personModel"]["userId"],
-      userInfoJson["personModel"]["name"],
-      userInfoJson["personModel"]["gender"],
-      userInfoJson["personModel"]["phoneNumber"],
-      userInfoJson["personModel"]["email"],
-      userInfoJson["personModel"]["address"],
-      userInfoJson["personModel"]["citizenId"],
-      userInfoJson["personModel"]["avatar"],
-      userInfoJson["username"],
-      userInfoJson["enabled"],
-      userInfoJson["roleModel"]["roleId"],
-      userInfoJson["roleModel"]["name"],
-    );
   }
 
   @override

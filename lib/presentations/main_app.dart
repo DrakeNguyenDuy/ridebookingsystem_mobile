@@ -4,7 +4,6 @@ import 'package:ride_booking_system/presentations/history.dart';
 import 'package:ride_booking_system/presentations/home_screen.dart';
 import 'package:ride_booking_system/presentations/personal.dart';
 import 'package:ride_booking_system/presentations/wallet.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,10 @@ import 'package:location/location.dart';
 import 'package:ride_booking_system/application/common.config.dart';
 import 'package:ride_booking_system/application/google_service.dart';
 import 'package:ride_booking_system/application/main_app_service.dart';
+import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/widgets/loading.dart';
+import 'package:ride_booking_system/data/model/personal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   // static String routeName = "/home";
@@ -129,6 +133,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void order(BuildContext context) async {
     Widget okButton = TextButton(
       child: const Text("OK"),
+      onPressed: () {
+        requestRide();
+      },
+    );
+    Widget okCancel = TextButton(
+      child: const Text("Cancel"),
       onPressed: () {},
     );
     _getPrice();
@@ -138,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return AlertDialog(
             title: const Text("Đặt xe"),
             content: Text("Gía cước: $price"),
-            actions: [okButton],
+            actions: [okCancel, okButton],
           );
         });
   }
@@ -161,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final body = jsonDecode(res2.body);
         setState(() {
           price = body["data"];
-          print(price);
         });
       }
     });
@@ -214,8 +223,24 @@ class _HomeScreenState extends State<HomeScreen> {
     await Firebase.initializeApp();
     // 2. Instantiate Firebase Messaging
     _messaging = FirebaseMessaging.instance;
-    _messaging.getToken().then((value) {
-      print(value);
+    _messaging.getToken().then((value) async {
+      await SharedPreferences.getInstance().then((ins) {
+        ins.setString(Varibales.TOKEN_FIREBASE, value!);
+      });
+    });
+  }
+
+  void requestRide() async {
+    final SharedPreferences sp = await SharedPreferences.getInstance();
+    String? firebaseToken = sp.getString(Varibales.TOKEN_FIREBASE);
+    int? customerId = sp.getInt(Varibales.CUSTOMER_ID);
+    mainAppService
+        .requestRide(l1.latitude, l1.longitude, l2.latitude, l2.longitude,
+            price, "Làm ơn đến sớm", customerId!, firebaseToken!)
+        .then((res) async {
+      if (res.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res.body);
+      }
     });
   }
 }
