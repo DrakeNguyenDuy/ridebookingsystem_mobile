@@ -39,6 +39,7 @@ class MainAppService {
       "customerId": customerId,
       "customerToken": firebaseTokenClient
     });
+    print(body);
     var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.requestRide);
     Map<String, String> header =
         await CommonConfig.headerWithToken().then((value) => value);
