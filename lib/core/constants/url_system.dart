@@ -7,4 +7,5 @@ class UrlSystem {
   static String trip = "/trip";
   static String getPrice = "$trip/getPrice";
   static String requestRide = "$trip/requestRide";
+  static String location = "/location";
 }
