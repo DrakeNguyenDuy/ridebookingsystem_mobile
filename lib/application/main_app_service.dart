@@ -45,4 +45,14 @@ class MainAppService {
         await CommonConfig.headerWithToken().then((value) => value);
     return await http.post(uri, headers: header, body: body);
   }
+
+  Future<http.Response> getAllLocation() async {
+    var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.location);
+    Map<String, String> header =
+        await CommonConfig.headerWithToken().then((value) => value);
+    return await http.get(
+      uri,
+      headers: header,
+    );
+  }
 }

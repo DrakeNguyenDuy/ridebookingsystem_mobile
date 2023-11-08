@@ -7,13 +7,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loading_progress/loading_progress.dart';
 import 'package:location/location.dart';
 import 'package:ride_booking_system/application/common.config.dart';
 import 'package:ride_booking_system/application/google_service.dart';
 import 'package:ride_booking_system/application/main_app_service.dart';
 import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/widgets/loading.dart';
-import 'package:ride_booking_system/data/model/personal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -35,10 +35,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Map<PolylineId, Polyline> polylinesMap = {};
 
+  Map<String, dynamic> mapLocation = {};
+
   LatLng? _currentLocation;
 
   LatLng l1 = LatLng(10.868, 106.751);
   LatLng l2 = LatLng(10.878, 106.757);
+
+  List<String> list = <String>[];
 
   final Completer<GoogleMapController> _mapControllerCompleter =
       Completer<GoogleMapController>();
@@ -51,10 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance?.addPostFrameCallback((_) {
-    //   _getPrice();
-    //   order(this.context);
-    // });
+    getAllLocation();
     getLocation().then((_) => getPolyPoint()
         .then((coordinates) => {generatePolylineFromPoints(coordinates)}));
     registerNotification();
@@ -130,36 +131,38 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void order(BuildContext context) async {
+  void order(BuildContext context, String destination, String priceResult) {
     Widget okButton = TextButton(
-      child: const Text("OK"),
+      child: const Text("Đặt chuyến"),
       onPressed: () {
         Navigator.pop(context);
         requestRide();
       },
     );
     Widget okCancel = TextButton(
-      child: const Text("Cancel"),
+      child: const Text("Hủy"),
       onPressed: () {
         Navigator.pop(context);
       },
     );
-    _getPrice();
     showDialog(
         context: context,
         builder: (BuildContext buildContext) {
           return AlertDialog(
             title: const Text("Đặt xe"),
-            content: Text("Gía cước: $price"),
+            content: Text("Địa điểm:$destination \nGía cước: $priceResult VND"),
             actions: [okCancel, okButton],
           );
         });
   }
 
   //get price by distance
-  void _getPrice() async {
+  void _getPrice(String destination) async {
+    LoadingProgress.start(context);
+    double latidudeDes = mapLocation[destination]["latitude"];
+    double longtidudeDes = mapLocation[destination]["longtitude"];
     // googleService
-    //     .getDistance(l1.latitude, l1.longitude, l2.latitude, l2.longitude)
+    //     .getDistance(_currentLocation.latitude, l1.longitude, l2.latitude, l2.longitude)
     //     .then((res1) async {
     //   print(res1);
     //   if (res1.statusCode == 200) {
@@ -172,8 +175,27 @@ class _HomeScreenState extends State<HomeScreen> {
     mainAppService.getPrice(4.4).then((res2) async {
       if (res2.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res2.body);
+        String priceTemp = body["data"];
+        LoadingProgress.stop(context);
+        order(context, destination, priceTemp);
+      }
+    });
+  }
+
+  void getAllLocation() async {
+    mainAppService.getAllLocation().then((res) async {
+      if (res.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res.body);
+        List<dynamic> locations = body["data"];
+        List<String> temp = [];
+        Map<String, dynamic> tempMap = {};
+        for (var i = 0; i < locations.length; i++) {
+          temp.add(locations.elementAt(i)["name"]);
+          tempMap[locations.elementAt(i)["name"]] = locations.elementAt(i);
+        }
         setState(() {
-          price = body["data"];
+          list = temp;
+          mapLocation = tempMap;
         });
       }
     });
@@ -183,18 +205,37 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.green[700],
-      ),
+      checkerboardOffscreenLayers: false,
       home: Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            order(context);
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerTop,
+        floatingActionButton: SearchAnchor(
+          builder: (BuildContext context, SearchController controller) {
+            return SearchBar(
+              controller: controller,
+              padding: const MaterialStatePropertyAll<EdgeInsets>(
+                  EdgeInsets.symmetric(horizontal: 16.0)),
+              onTap: () {
+                controller.openView();
+              },
+              onChanged: (_) {
+                controller.openView();
+              },
+              leading: const Icon(Icons.search),
+            );
           },
-          child: Text("ĐẶT XE"),
-          backgroundColor: Colors.amberAccent,
+          suggestionsBuilder:
+              (BuildContext context, SearchController controller) {
+            return list.map((e) => ListTile(
+                  leading: const Icon(Icons.location_on),
+                  title: Text(e),
+                  onTap: () {
+                    setState(() {
+                      controller.closeView(e);
+                    });
+                    _getPrice(e);
+                  },
+                ));
+          },
         ),
         body: _currentLocation == null
             ? const LoadingWidget()
@@ -241,7 +282,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .requestRide(10.763932849773887, 106.6817367439953, l2.latitude,
             l2.longitude, price, "Làm ơn đến sớm", customerId!, firebaseToken!)
         .then((res) async {
-      print(jsonDecode(res.body));
       if (res.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res.body);
       }
