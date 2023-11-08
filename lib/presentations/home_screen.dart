@@ -134,12 +134,15 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget okButton = TextButton(
       child: const Text("OK"),
       onPressed: () {
+        Navigator.pop(context);
         requestRide();
       },
     );
     Widget okCancel = TextButton(
       child: const Text("Cancel"),
-      onPressed: () {},
+      onPressed: () {
+        Navigator.pop(context);
+      },
     );
     _getPrice();
     showDialog(
@@ -235,9 +238,10 @@ class _HomeScreenState extends State<HomeScreen> {
     String? firebaseToken = sp.getString(Varibales.TOKEN_FIREBASE);
     int? customerId = sp.getInt(Varibales.CUSTOMER_ID);
     mainAppService
-        .requestRide(l1.latitude, l1.longitude, l2.latitude, l2.longitude,
-            price, "Làm ơn đến sớm", customerId!, firebaseToken!)
+        .requestRide(10.763932849773887, 106.6817367439953, l2.latitude,
+            l2.longitude, price, "Làm ơn đến sớm", customerId!, firebaseToken!)
         .then((res) async {
+      print(jsonDecode(res.body));
       if (res.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res.body);
       }
