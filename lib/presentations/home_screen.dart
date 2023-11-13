@@ -37,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   MainAppService mainAppService = MainAppService();
   String pick = "";
   String des = "";
+  bool isOpen = false;
 
   Map<PolylineId, Polyline> polylinesMap = {};
 
@@ -44,8 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   LatLng? _currentLocation;
 
-  LatLng l1 = LatLng(10.868, 106.751);
-  LatLng l2 = LatLng(10.878, 106.757);
+  late LatLng pickLat;
+  late LatLng desLat;
 
   List<String> list = <String>[];
 
@@ -89,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _currentLocation =
               LatLng(currentLocation.latitude!, currentLocation.longitude!);
-          cameraToPosition(l1);
+          // cameraToPosition(_currentLocation);
         });
       }
     });
@@ -101,8 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
     PolylineResult polylineResult =
         await polylinePoints.getRouteBetweenCoordinates(
             CommonConfig.API_GOOGLE_KEY,
-            PointLatLng(l1.latitude, l1.longitude),
-            PointLatLng(l2.latitude, l2.longitude),
+            PointLatLng(pickLat.latitude, pickLat.longitude),
+            PointLatLng(desLat.latitude, desLat.longitude),
             travelMode: TravelMode.driving);
     if (polylineResult.points.isNotEmpty) {
       for (var element in polylineResult.points) {
@@ -173,18 +174,18 @@ class _HomeScreenState extends State<HomeScreen> {
     double longtidudePick = mapLocation[pick]["longtitude"];
     double latidudeDes = mapLocation[des]["latitude"];
     double longtidudeDes = mapLocation[des]["longtitude"];
-    // googleService
-    //     .getDistance(_currentLocation.latitude, l1.longitude, l2.latitude, l2.longitude)
-    //     .then((res1) async {
-    //   print(res1);
-    //   if (res1.statusCode == 200) {
-    //     final body = jsonDecode(res1.body);
-    //     double destination =
-    //         body["rows"]["elements"]["distance"]["value"] / 1000;
-    //     print(destination);
-    //   }
-    // });
-    mainAppService.getPrice(4.4).then((res2) async {
+    double distance = 0;
+    googleService
+        .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
+        .then((res1) async {
+      print(res1);
+      if (res1.statusCode == 200) {
+        final body = jsonDecode(res1.body);
+        distance = body["rows"]["elements"]["distance"]["value"] / 1000;
+      }
+    });
+    distance = distance == 0 ? 4.4 : distance;
+    mainAppService.getPrice(distance).then((res2) async {
       if (res2.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res2.body);
         String priceTemp = body["data"];
@@ -231,6 +232,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       EdgeInsets.symmetric(horizontal: 16.0)),
                   onTap: () {
                     controller.openView();
+                    // setState(() {
+                    //   isOpen = !isOpen;
+                    // });
                   },
                   onChanged: (_) {
                     controller.openView();
@@ -252,62 +256,71 @@ class _HomeScreenState extends State<HomeScreen> {
                     ));
               },
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(Icons.arrow_downward, color: ColorPalette.primaryColor),
-                Icon(
-                  Icons.arrow_downward,
-                  color: ColorPalette.primaryColor,
-                )
-              ],
+            Visibility(
+              // visible: isOpen,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(Icons.arrow_downward, color: ColorPalette.primaryColor),
+                  Icon(
+                    Icons.arrow_downward,
+                    color: ColorPalette.primaryColor,
+                  )
+                ],
+              ),
             ),
-            SearchAnchor(
-              builder: (BuildContext context, SearchController controller) {
-                return SearchBar(
-                  hintText: "Điểm đến",
-                  controller: controller,
-                  padding: const MaterialStatePropertyAll<EdgeInsets>(
-                      EdgeInsets.symmetric(horizontal: 16.0)),
-                  onTap: () {
-                    controller.openView();
-                  },
-                  onChanged: (_) {
-                    controller.openView();
-                  },
-                  leading: const Icon(Icons.search),
-                );
-              },
-              suggestionsBuilder:
-                  (BuildContext context, SearchController controller) {
-                return list.map((e) => ListTile(
-                      leading: const Icon(Icons.location_on),
-                      title: Text(e),
-                      onTap: () {
-                        setState(() {
-                          des = e;
-                          controller.closeView(e);
-                        });
-                      },
-                    ));
-              },
+            Visibility(
+              // visible: isOpen,
+              child: SearchAnchor(
+                builder: (BuildContext context, SearchController controller) {
+                  return SearchBar(
+                    hintText: "Điểm đến",
+                    controller: controller,
+                    padding: const MaterialStatePropertyAll<EdgeInsets>(
+                        EdgeInsets.symmetric(horizontal: 16.0)),
+                    onTap: () {
+                      controller.openView();
+                    },
+                    onChanged: (_) {
+                      controller.openView();
+                    },
+                    leading: const Icon(Icons.search),
+                  );
+                },
+                suggestionsBuilder:
+                    (BuildContext context, SearchController controller) {
+                  return list.map((e) => ListTile(
+                        leading: const Icon(Icons.location_on),
+                        title: Text(e),
+                        onTap: () {
+                          setState(() {
+                            des = e;
+                            controller.closeView(e);
+                          });
+                        },
+                      ));
+                },
+              ),
             ),
-            Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height / 18,
-                margin: const EdgeInsets.fromLTRB(ds_1, ds_2 * 2, ds_1, ds_1),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorPalette.primaryColor,
+            Visibility(
+              // visible: isOpen,
+              child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height / 18,
+                  margin: const EdgeInsets.fromLTRB(ds_1, ds_2 * 2, ds_1, ds_1),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorPalette.primaryColor,
 
-                    // padding: const EdgeInsets.all(15.0),
-                  ),
-                  onPressed: _getPrice,
-                  child: Text(
-                    "Đặt chuyến",
-                    style: MainStyle.textStyle5,
-                  ),
-                ))
+                      // padding: const EdgeInsets.all(15.0),
+                    ),
+                    onPressed: _getPrice,
+                    child: Text(
+                      "Đặt chuyến",
+                      style: MainStyle.textStyle5,
+                    ),
+                  )),
+            )
           ],
         ),
         body: _currentLocation == null
@@ -318,18 +331,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   target: _currentLocation!,
                   zoom: zoom,
                 ),
-                markers: {
-                  Marker(
-                    markerId: const MarkerId("location2"),
-                    position: l1,
-                    icon: BitmapDescriptor.defaultMarker,
-                  ),
-                  Marker(
-                    markerId: const MarkerId("location1"),
-                    position: l2,
-                    icon: BitmapDescriptor.defaultMarkerWithHue(2),
-                  ),
-                },
+                // markers: pickLat!=null && desLat!=null  {
+                //   Marker(
+                //     markerId: const MarkerId("location2"),
+                //     position: pickLat,
+                //     icon: BitmapDescriptor.defaultMarker,
+                //   ),
+                //   Marker(
+                //     markerId: const MarkerId("location1"),
+                //     position: desLat,
+                //     icon: BitmapDescriptor.defaultMarkerWithHue(2),
+                //   ),
+                // },
                 polylines: Set<Polyline>.of(polylinesMap.values),
               ),
       ),
