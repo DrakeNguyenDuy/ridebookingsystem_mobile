@@ -7,8 +7,7 @@ class GoogleService {
     String path = "https://maps.googleapis.com/maps/api/distancematrix/"
         "json?destinations=$latitudePick%2C$longtidudePick&"
         "origins=$latitudeDes%2C$longtidudeDes&key=${CommonConfig.API_GOOGLE_KEY}";
-    print(path);
-    var uri = Uri.http(path);
+    var uri = Uri.parse(path);
     return await http.get(uri);
   }
 }
