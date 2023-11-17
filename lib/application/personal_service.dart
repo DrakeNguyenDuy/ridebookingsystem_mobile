@@ -39,13 +39,14 @@ class PersonService {
     return await http.post(uri, headers: header, body: body);
   }
 
-  Future<http.Response> uploadImage(String file, int personId) async {
-    var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.upload_image);
+  Future<http.StreamedResponse> uploadImage(String path, int personId) async {
     Map<String, String> header =
         await CommonConfig.headerWithToken().then((value) => value);
-    final body = jsonEncode({
-      "image": file,
-    });
-    return await http.post(uri, headers: header, body: body);
+    var request = http.MultipartRequest('POST',
+        Uri.parse('http://ridebookingsystem.ddns.net:9090/api/upload-images'));
+    request.fields.addAll({'userId': '10'});
+    request.files.add(await http.MultipartFile.fromPath('image', path));
+    request.headers.addAll(header);
+    return await request.send();
   }
 }
