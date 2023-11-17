@@ -1,20 +1,16 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_progress/loading_progress.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
-import 'package:ride_booking_system/core/constants/constants/assets_images.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
 import 'package:ride_booking_system/core/constants/constants/dimension_constanst.dart';
 import 'package:ride_booking_system/core/constants/constants/font_size_constanst.dart';
-import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
 import 'package:ride_booking_system/core/widgets/text_field_widget.dart';
 import 'package:ride_booking_system/presentations/login.dart';
-import 'package:ride_booking_system/presentations/main_app.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -27,7 +23,8 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final fullnameController = TextEditingController();
   final phoneNumberController = TextEditingController();
-  final userNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final addressController = TextEditingController();
   final passwordController = TextEditingController();
   AuthenticationService authenticationService = AuthenticationService();
   List<String> _genders = <String>['Female', 'Male'];
@@ -39,43 +36,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _register() async {
-    LoadingProgress.start(context);
-    var username = userNameController.text;
+    var fullName = fullnameController.text;
+    var phoneNumber = phoneNumberController.text;
+    var email = emailController.text;
+    var address = addressController.text;
     var password = passwordController.text;
-    authenticationService.login(username, password).then((res) async {
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        String statusCode = body['status'];
-        if (statusCode.compareTo("ERROR") == 0) {
-          LoadingProgress.stop(context);
-          Fluttertoast.showToast(
-              backgroundColor: Colors.amberAccent,
-              msg: body['data']['message'],
-              webPosition: "top");
-        }
-        var userInfo = body['data']['userInfo'];
-        await SharedPreferences.getInstance().then((ins) {
-          ins.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
-          ins.setInt(Varibales.CUSTOMER_ID, userInfo["personModel"]["userId"]);
-          ins.setString(Varibales.NAME_USER, userInfo["personModel"]["name"]);
-          ins.setString(
-              Varibales.GENDER_USER, userInfo["personModel"]["gender"]);
-          ins.setString(Varibales.PHONE_NUMBER_USER,
-              userInfo["personModel"]["phoneNumber"]);
-          ins.setString(
-              Varibales.AVATAR_USER, userInfo["personModel"]["avatar"]);
-          ins.setString(Varibales.ADDRESS, userInfo["personModel"]["address"]);
-          ins.setString(Varibales.EMAIL, userInfo["personModel"]["email"]);
-        });
+    bool gender = genderSelected == "Female" ? false : true;
+    if (fullName == "" ||
+        phoneNumber == "" ||
+        email == "" ||
+        address == "" ||
+        password == "" ||
+        genderSelected == "") {
+      Fluttertoast.showToast(msg: "Các ô giá trị cần phải điển đầy đủ");
+    }
+    LoadingProgress.start(context);
+    authenticationService
+        .register(fullName, gender, email, phoneNumber, address, password)
+        .then((res) async {
+      if (res.statusCode == HttpStatus.ok) {
         LoadingProgress.stop(context);
+        Fluttertoast.showToast(msg: "Đăng ký thành công, hãy đăng nhập");
         Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => const MainApp()),
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
             (route) => false);
       } else {
         LoadingProgress.stop(context);
         Fluttertoast.showToast(
-            msg: "Username or Password incorrect!", webPosition: "top");
+            msg: "Đăng ký không thành công", webPosition: "top");
       }
     });
   }
@@ -94,8 +83,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 children: [
+                  SizedBox(
+                    height: ds_2,
+                  ),
                   Text(
-                    "ĐĂNG KÝ",
+                    "Đăng Ký Tài Khoản",
                     style: MainStyle.textStyle1.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: fs_3 * 2,
@@ -104,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   TextFieldWidget(
                     nameLable: "Họ và tên",
-                    controller: userNameController,
+                    controller: fullnameController,
                   ),
                   Padding(
                     padding: const EdgeInsets.all(ds_1),
@@ -139,23 +131,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   TextFieldWidget(
                     nameLable: "Số điện thoại",
-                    controller: passwordController,
-                    typePassword: true,
+                    controller: phoneNumberController,
                   ),
                   TextFieldWidget(
                     nameLable: "Email",
-                    controller: passwordController,
-                    typePassword: true,
+                    controller: emailController,
                   ),
                   TextFieldWidget(
                     nameLable: "Địa chỉ",
-                    controller: passwordController,
-                    typePassword: true,
-                  ),
-                  TextFieldWidget(
-                    nameLable: "Username",
-                    controller: passwordController,
-                    typePassword: true,
+                    controller: addressController,
                   ),
                   TextFieldWidget(
                     nameLable: "Mật khẩu",
@@ -200,8 +184,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    userNameController.dispose();
+    fullnameController.dispose();
     passwordController.dispose();
+    addressController.dispose();
+    phoneNumberController.dispose();
+    emailController.dispose();
     super.dispose();
   }
 }

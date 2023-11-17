@@ -155,4 +155,13 @@ class _EditPersonalScreenState extends State<EditPersonalScreen> {
           ),
         ));
   }
+
+  @override
+  void dispose() {
+    nameEC.dispose();
+    phoneNumberEC.dispose();
+    addressEC.dispose();
+    mailEC.dispose();
+    super.dispose();
+  }
 }
