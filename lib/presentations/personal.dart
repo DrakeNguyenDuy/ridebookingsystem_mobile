@@ -1,4 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
 import 'package:ride_booking_system/application/personal_service.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
@@ -6,32 +12,47 @@ import 'package:ride_booking_system/core/constants/constants/dimension_constanst
 import 'package:ride_booking_system/core/constants/constants/font_size_constanst.dart';
 import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/style/text_style.dart';
-import 'package:ride_booking_system/data/model/Personal.dart';
+import 'package:ride_booking_system/presentations/edit_personal.dart';
 import 'package:ride_booking_system/presentations/login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PersonalScreen extends StatefulWidget {
   const PersonalScreen({super.key});
-  static const String routeName = "/login";
+  static const String routeName = "/personal";
 
   @override
   State<PersonalScreen> createState() => _PersonalScreenState();
 }
 
 class _PersonalScreenState extends State<PersonalScreen> {
-  // bool _isLogged = false;
-  final userNameController = TextEditingController();
-  final passwordController = TextEditingController();
   final PersonService personalService = PersonService();
-  late PersonalInfor personalInfor;
+  String name = "";
+  String gender = "";
+  String address = "";
+  String phoneNumber = "";
+  String avatar = "";
+  String email = "";
+  String tokenFirebase = "";
+  int idUser = -1;
 
-  String dataFromChild = "";
   AuthenticationService authenticationService = AuthenticationService();
   @override
   void initState() {
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    super.initState();
     innitData();
+    super.initState();
+  }
+
+  void changeAvatar() async {
+    final ImagePicker picker = ImagePicker();
+    XFile? choosedimage = await picker.pickImage(source: ImageSource.gallery);
+    List<int> imageBytes = await choosedimage!.readAsBytes();
+    String baseimage = base64Encode(imageBytes);
+    personalService.uploadImage(baseimage, idUser).then((res) async {
+      print(res);
+      if (res.statusCode == HttpStatus.ok) {
+        print(res);
+      }
+    });
   }
 
   void _logout() async {
@@ -43,11 +64,32 @@ class _PersonalScreenState extends State<PersonalScreen> {
         (route) => false);
   }
 
+  void moveEditScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => EditPersonalScreen(
+                name: name,
+                address: address,
+                phoneNumber: phoneNumber,
+                gender: gender,
+                email: email,
+                userId: idUser,
+              )),
+    ).then((value) async {
+      await SharedPreferences.getInstance().then((ins) {
+        setState(() {
+          name = ins.getString(Varibales.NAME_USER)!;
+        });
+      });
+    });
+  }
+
   String getSayHi() {
     DateTime now = DateTime.now();
     int hourCurrent = now.hour;
     return hourCurrent < 12
-        ? "Good Morning"
+        ? "Chào buổi sáng"
         : hourCurrent < 18
             ? "Good Afternoon"
             : "Good Evening";
@@ -56,13 +98,13 @@ class _PersonalScreenState extends State<PersonalScreen> {
   void _pressItem(BuildContext context) async {
     // set up the buttons
     Widget cancelButton = TextButton(
-      child: const Text("Cancel"),
+      child: const Text("Hủy"),
       onPressed: () {
         Navigator.pop(context);
       },
     );
     Widget continueButton = TextButton(
-      child: const Text("Continue"),
+      child: const Text("Ok"),
       onPressed: () {
         _logout();
       },
@@ -72,7 +114,7 @@ class _PersonalScreenState extends State<PersonalScreen> {
         context: context,
         builder: (BuildContext buildContext) {
           return AlertDialog(
-            title: const Text("Are you want logout"),
+            title: const Text("Bạn có muốn đăng xuất không?"),
             actions: [
               cancelButton,
               continueButton,
@@ -81,55 +123,33 @@ class _PersonalScreenState extends State<PersonalScreen> {
         });
   }
 
-  void innitData() async {
-    // final SharedPreferences sp = await SharedPreferences.getInstance();
-    // String? personalInfo = sp.getString(Varibales.PERSONAL_INFO);
-    // String? a = sp.getString(Varibales.ACCESS_TOKEN);
+  void changeStateConnect(bool status) async {
     await SharedPreferences.getInstance().then((ins) {
-      String? s = ins.getString(Varibales.ACCESS_TOKEN);
-      print("===>");
-      print(s);
+      ins.setBool(Varibales.IS_CONNECT, status);
     });
   }
 
-  // void innitData() async {
-  //   final SharedPreferences sp = await SharedPreferences.getInstance();
-  //   String? personalInfo = sp.getString(Varibales.PERSONAL_INFO);
-  //   if (personalInfo == null) {
-  //     String? accessToken = sp.getString(Varibales.ACCESS_TOKEN);
-  //     // _getPersonal("", sp);
-  //   } else {}
-  // }
+  void innitData() async {
+    await SharedPreferences.getInstance().then((ins) {
+      setState(() {
+        name = ins.getString(Varibales.NAME_USER)!;
+        address = ins.getString(Varibales.ADDRESS)!;
+        avatar = ins.getString(Varibales.AVATAR_USER)!;
+        gender = ins.getString(Varibales.GENDER_USER)!;
+        phoneNumber = ins.getString(Varibales.PHONE_NUMBER_USER)!;
+        email = ins.getString(Varibales.EMAIL)!;
+        idUser = ins.getInt(Varibales.CUSTOMER_ID)!;
+        tokenFirebase = ins.getString(Varibales.TOKEN_FIREBASE)!;
+      });
+    });
+  }
 
-  // void _getPersonal(String id, SharedPreferences sp) async {
-  //   personalService.getInfo("5").then((res) {
-  //     if (res.statusCode == 200) {
-  //       final body = jsonDecode(res.body);
-  //       personalInfor = mapperJson2Model(body);
-  //       sp.setString(Varibales.PERSONAL_INFO, jsonEncode(body));
-  //       print(personalInfor);
-  //     } else {
-  //       Fluttertoast.showToast(msg: "error");
-  //     }
-  //   });
-  // }
-
-  // PersonalInfor mapperJson2Model(dynamic body) {
-  //   return PersonalInfor(
-  //     body["personId"],
-  //     body["name"],
-  //     body["gender"],
-  //     body["phoneNumber"],
-  //     body["email"],
-  //     body["address"],
-  //     body["citizenId"],
-  //     body["avatar"],
-  //     body["userModel"]["username"],
-  //     body["userModel"]["enabled"],
-  //     body["userModel"]["roleId"],
-  //     body["userModel"]["name"],
-  //   );
-  // }
+  ImageProvider<Object> getAvt() {
+    return avatar == ""
+        ? const NetworkImage("https://ui-avatars.com/api/?name=rbs")
+            as ImageProvider
+        : MemoryImage(base64Decode(avatar));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,40 +164,75 @@ class _PersonalScreenState extends State<PersonalScreen> {
                   flex: 1,
                   child: Container(
                     color: ColorPalette.grayLight,
-                    // decoration: BoxDecoration(
-                    //     image: DecorationImage(
-                    //         fit: BoxFit.fill,
-                    //         image: NetworkImage(
-                    //             "https://docs.flutter.dev/assets/images/dash/dash-fainting.gif"))),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(getSayHi(),
-                                style: TextStyleApp.ts_1.copyWith(
-                                  color: ColorPalette.primaryColor,
-                                  letterSpacing: 1,
-                                )),
-                            Text("Nguyễn Dũy Long",
-                                style: TextStyleApp.tsHeader.copyWith(
-                                    fontSize: fs_6,
-                                    inherit: true,
-                                    textBaseline: TextBaseline.ideographic,
-                                    overflow: TextOverflow.fade))
-                          ],
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(getSayHi(),
+                                  style: TextStyleApp.ts_1.copyWith(
+                                    color: ColorPalette.primaryColor,
+                                    letterSpacing: 1,
+                                  )),
+                              Text(name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyleApp.tsHeader.copyWith(
+                                      fontSize: fs_6,
+                                      inherit: true,
+                                      textBaseline: TextBaseline.ideographic,
+                                      overflow: TextOverflow.fade)),
+                            ],
+                          ),
                         ),
-                        CircleAvatar(
-                          radius: MediaQuery.of(context).size.height / 20,
-                          backgroundColor: Colors.teal,
-                          backgroundImage:
-                              const NetworkImage("https://i.pravatar.cc/300"),
-                          child: const ElevatedButton(
-                            onPressed: null,
-                            child: Text("c",
-                                style: TextStyle(
-                                    backgroundColor: ColorPalette.yellow)),
+                        Expanded(
+                          flex: 1,
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: MediaQuery.of(context).size.height / 18,
+                                backgroundColor: Colors.teal,
+                                backgroundImage: getAvt(),
+                              ),
+                              Positioned(
+                                bottom: 1,
+                                right: 1,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    changeAvatar();
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                          width: 2,
+                                          color: Colors.white,
+                                        ),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(
+                                            50,
+                                          ),
+                                        ),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            offset: Offset(2, 4),
+                                            color: Colors.black.withOpacity(
+                                              0.3,
+                                            ),
+                                            blurRadius: 3,
+                                          ),
+                                        ]),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(ds_1),
+                                      child: Icon(Icons.add_a_photo,
+                                          color: Colors.black),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       ],
@@ -188,19 +243,15 @@ class _PersonalScreenState extends State<PersonalScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(ds_1),
                   children: [
-                    const ListTile(
-                      title: Text("Edit personal"),
+                    ListTile(
+                      title: const Text("Chỉnh sửa thông tin cá nhân"),
                       autofocus: true,
-                      // iconColor: ColorPalette.organge,
-                      // leading: Icon(Icons.abc),
                       minLeadingWidth: 0,
                       selectedColor: ColorPalette.blue,
-                    ),
-                    const ListTile(
-                      title: Text("Language"),
+                      onTap: () => moveEditScreen(),
                     ),
                     ListTile(
-                        title: const Text("Log out"),
+                        title: const Text("Đăng xuất"),
                         onTap: () => _pressItem(context)),
                   ],
                 ),
@@ -208,12 +259,5 @@ class _PersonalScreenState extends State<PersonalScreen> {
             ],
           ),
         ));
-  }
-
-  @override
-  void dispose() {
-    userNameController.dispose();
-    passwordController.dispose();
-    super.dispose();
   }
 }

@@ -19,4 +19,10 @@ class AuthenticationService {
     final body = jsonEncode({'username': username, "password": pasword});
     return await http.post(uri, headers: CommonConfig.header, body: body);
   }
+
+  Future<http.Response> register(String username, String pasword) async {
+    var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.register);
+    final body = jsonEncode({'username': username, "password": pasword});
+    return await http.post(uri, headers: CommonConfig.header, body: body);
+  }
 }
