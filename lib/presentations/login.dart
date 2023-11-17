@@ -13,6 +13,7 @@ import 'package:ride_booking_system/core/constants/variables.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
 import 'package:ride_booking_system/core/widgets/text_field_widget.dart';
 import 'package:ride_booking_system/presentations/main_app.dart';
+import 'package:ride_booking_system/presentations/register.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -49,10 +50,18 @@ class _LoginScreenState extends State<LoginScreen> {
               webPosition: "top");
         }
         var userInfo = body['data']['userInfo'];
-        // final SharedPreferences sp =
         await SharedPreferences.getInstance().then((ins) {
           ins.setString(Varibales.ACCESS_TOKEN, body['data']['accessToken']);
           ins.setInt(Varibales.CUSTOMER_ID, userInfo["personModel"]["userId"]);
+          ins.setString(Varibales.NAME_USER, userInfo["personModel"]["name"]);
+          ins.setString(
+              Varibales.GENDER_USER, userInfo["personModel"]["gender"]);
+          ins.setString(Varibales.PHONE_NUMBER_USER,
+              userInfo["personModel"]["phoneNumber"]);
+          ins.setString(
+              Varibales.AVATAR_USER, userInfo["personModel"]["avatar"]);
+          ins.setString(Varibales.ADDRESS, userInfo["personModel"]["address"]);
+          ins.setString(Varibales.EMAIL, userInfo["personModel"]["email"]);
         });
         LoadingProgress.stop(context);
         Navigator.pushAndRemoveUntil(
@@ -63,11 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
         LoadingProgress.stop(context);
         Fluttertoast.showToast(
             msg: "Username or Password incorrect!", webPosition: "top");
-        // LoadingProgress.stop(context);
       }
     });
-    // Navigator.pushAndRemoveUntil(context,
-    //     MaterialPageRoute(builder: (_) => const MainApp()), (route) => false);
   }
 
   @override
@@ -82,57 +88,66 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 Expanded(
+                  flex: 1,
                   child: Image.asset(
                     AssetImages.login,
                     height: MediaQuery.of(context).size.height / 3,
                   ),
                 ),
                 Expanded(
+                    flex: 2,
                     child: Column(
-                  children: [
-                    Text(
-                      "Let's First Go Login",
-                      style: MainStyle.textStyle1.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: fs_3 * 2,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    TextFieldWidget(
-                      nameLable: "User Name",
-                      controller: userNameController,
-                    ),
-                    TextFieldWidget(
-                      nameLable: "Password",
-                      controller: passwordController,
-                      typePassword: true,
-                    ),
-                    Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height / 18,
-                        margin:
-                            const EdgeInsets.fromLTRB(ds_1, ds_1, ds_1, ds_1),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorPalette.primaryColor,
-                            // padding: const EdgeInsets.all(15.0),
+                      children: [
+                        Text(
+                          "Đăng Nhập",
+                          style: MainStyle.textStyle1.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: fs_3 * 2,
                           ),
-                          onPressed: _loggin,
-                          child: Text(
-                            "Login",
-                            style: MainStyle.textStyle5,
-                          ),
-                        )),
-                    Text(
-                      "Forgot password",
-                      style: MainStyle.textStyle5.copyWith(
-                        color: ColorPalette.primaryColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                )),
-                // Expanded(child: null)
+                          textAlign: TextAlign.center,
+                        ),
+                        TextFieldWidget(
+                          nameLable: "Tên đăng nhập",
+                          controller: userNameController,
+                        ),
+                        TextFieldWidget(
+                          nameLable: "Mật khẩu",
+                          controller: passwordController,
+                          typePassword: true,
+                        ),
+                        Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height / 18,
+                            margin: const EdgeInsets.fromLTRB(
+                                ds_1, ds_1, ds_1, ds_1),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorPalette.primaryColor,
+                              ),
+                              onPressed: _loggin,
+                              child: Text(
+                                "Đăng nhập",
+                                style: MainStyle.textStyle5,
+                              ),
+                            )),
+                        const SizedBox(
+                          height: ds_3,
+                        ),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const RegisterScreen()),
+                                  (route) => false);
+                            },
+                            child: Text(
+                              "Bạn chưa có tài khoản? Đăng ký ngay",
+                              style:
+                                  TextStyle(color: ColorPalette.primaryColor),
+                            ))
+                      ],
+                    )),
               ],
             ),
           ),
@@ -146,17 +161,3 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 }
-
-// const Text("Hãy đăng nhập đi",
-//           style: TextStyle(
-//               color: Color.fromARGB(255, 57, 241, 100),
-//               fontSize: 100.0,
-//               fontWeight: FontWeight.w700)),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _logged,
-//         tooltip: 'Increment',
-//         child: const Icon(Icons.add),
-//       ),
-//  Image.network(
-//                 "https://assets.materialup.com/uploads/c18c728e-b55c-4195-9b50-16bb2d767908/mockup.png"),
-//           )

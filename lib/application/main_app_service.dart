@@ -55,4 +55,12 @@ class MainAppService {
       headers: header,
     );
   }
+
+  Future<http.Response> cancelRide(int tripId, String reason) async {
+    var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.cancelRide);
+    Map<String, String> header =
+        await CommonConfig.headerWithToken().then((value) => value);
+    final body = jsonEncode({"tripId": tripId, "reason": reason});
+    return await http.post(uri, headers: header, body: body);
+  }
 }

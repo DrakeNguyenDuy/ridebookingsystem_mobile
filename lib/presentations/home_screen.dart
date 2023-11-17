@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,10 +11,13 @@ import 'package:location/location.dart';
 import 'package:ride_booking_system/application/common.config.dart';
 import 'package:ride_booking_system/application/google_service.dart';
 import 'package:ride_booking_system/application/main_app_service.dart';
+import 'package:ride_booking_system/application/message_service.dart';
 import 'package:ride_booking_system/core/constants/constants/color_constants.dart';
 import 'package:ride_booking_system/core/constants/constants/dimension_constanst.dart';
 import 'package:ride_booking_system/core/constants/variables.dart';
+import 'package:ride_booking_system/core/style/button_style.dart';
 import 'package:ride_booking_system/core/style/main_style.dart';
+import 'package:ride_booking_system/core/utils/dialog_utils.dart';
 import 'package:ride_booking_system/core/widgets/loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,8 +30,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final FirebaseMessaging _messaging;
-  final double zoom = 17.0;
+  final double zoom = 16.0;
   late GoogleMapController mapController;
   final Location _locationController = Location();
   GoogleService googleService = GoogleService();
@@ -42,6 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<PolylineId, Polyline> polylinesMap = {};
 
   Map<String, dynamic> mapLocation = {};
+
+  final _messagingService = MessageService();
 
   LatLng? _currentLocation;
 
@@ -64,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
     getAllLocation();
     getLocation().then((_) => getPolyPoint()
         .then((coordinates) => {generatePolylineFromPoints(coordinates)}));
-    registerNotification();
+    _messagingService.init();
   }
 
   Future<void> getLocation() async {
@@ -139,25 +141,79 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void order(BuildContext context, String destination, String priceResult) {
     Widget okButton = TextButton(
-      child: const Text("Đặt chuyến"),
+        style: ButtonStyleHandle.bts_1,
+        onPressed: () {
+          Navigator.pop(context);
+          requestRide(double.parse(priceResult));
+        },
+        child: const Text(
+          "Đặt xe",
+          style: TextStyle(color: ColorPalette.white),
+        ));
+    Widget cancelButton = TextButton(
+      style: ButtonStyleHandle.bts_1,
       onPressed: () {
         Navigator.pop(context);
-        requestRide(double.parse(priceResult));
       },
-    );
-    Widget okCancel = TextButton(
-      child: const Text("Hủy"),
-      onPressed: () {
-        Navigator.pop(context);
-      },
+      child: const Text(
+        "Hủy",
+        style: TextStyle(color: ColorPalette.white),
+      ),
     );
     showDialog(
         context: context,
         builder: (BuildContext buildContext) {
           return AlertDialog(
-            title: const Text("Đặt xe"),
-            content: Text("Địa điểm:$destination \nGía cước: $priceResult VND"),
-            actions: [okCancel, okButton],
+            title: const Text("Đặt Xe", style: TextStyle(fontSize: 25)),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RichText(
+                  textAlign: TextAlign.left,
+                  text: TextSpan(
+                    text: 'Điểm đến: ',
+                    style: MainStyle.textStyle2.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black),
+                    children: <TextSpan>[
+                      TextSpan(
+                          text: destination,
+                          style: MainStyle.textStyle2.copyWith(
+                            fontSize: 16,
+                            color: Colors.black,
+                          )),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                RichText(
+                  textAlign: TextAlign.left,
+                  text: TextSpan(
+                    text: 'Gía cước: ',
+                    style: MainStyle.textStyle2.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.black),
+                    children: <TextSpan>[
+                      TextSpan(
+                          text: priceResult,
+                          style: MainStyle.textStyle2.copyWith(
+                            color: Colors.black,
+                            fontSize: 16,
+                          )),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [cancelButton, okButton],
+            actionsAlignment: MainAxisAlignment.spaceAround,
+            icon: const Icon(Icons.directions_car_rounded,
+                size: 50, color: ColorPalette.primaryColor),
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(25))),
           );
         });
   }
@@ -175,15 +231,15 @@ class _HomeScreenState extends State<HomeScreen> {
     double latidudeDes = mapLocation[des]["latitude"];
     double longtidudeDes = mapLocation[des]["longtitude"];
     double distance = 0;
-    googleService
-        .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
-        .then((res1) async {
-      print(res1);
-      if (res1.statusCode == 200) {
-        final body = jsonDecode(res1.body);
-        distance = body["rows"]["elements"]["distance"]["value"] / 1000;
-      }
-    });
+    // googleService
+    //     .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
+    //     .then((res1) async {
+    //   print(res1);
+    //   if (res1.statusCode == 200) {
+    //     final body = jsonDecode(res1.body);
+    //     distance = body["rows"]["elements"]["distance"]["value"] / 1000;
+    //   }
+    // });
     distance = distance == 0 ? 4.4 : distance;
     mainAppService.getPrice(distance).then((res2) async {
       if (res2.statusCode == HttpStatus.ok) {
@@ -226,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SearchAnchor(
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
-                  hintText: "Điêm đi",
+                  hintText: "Điểm đi",
                   controller: controller,
                   padding: const MaterialStatePropertyAll<EdgeInsets>(
                       EdgeInsets.symmetric(horizontal: 16.0)),
@@ -349,17 +405,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void registerNotification() async {
-    await Firebase.initializeApp();
-    // 2. Instantiate Firebase Messaging
-    _messaging = FirebaseMessaging.instance;
-    _messaging.getToken().then((value) async {
-      await SharedPreferences.getInstance().then((ins) {
-        ins.setString(Varibales.TOKEN_FIREBASE, value!);
-      });
-    });
-  }
-
   void requestRide(double price) async {
     double latidudePick = mapLocation[pick]["latitude"];
     double longtidudePick = mapLocation[pick]["longtitude"];
@@ -373,7 +418,12 @@ class _HomeScreenState extends State<HomeScreen> {
             price, "Làm ơn đến sớm", customerId!, firebaseToken!)
         .then((res) async {
       if (res.statusCode == HttpStatus.ok) {
-        final body = jsonDecode(res.body);
+        // final body = jsonDecode(res.body);
+        DialogUtils.showDialogNotfication(
+            context, "Bạn đã đặt xe thành công", Icons.done);
+      } else {
+        DialogUtils.showDialogNotfication(
+            context, "Đặt xe không thành công", Icons.error);
       }
     });
   }

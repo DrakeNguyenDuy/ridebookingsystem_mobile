@@ -49,6 +49,7 @@ dependencies:
   location: ^4.4.0
   flutter_polyline_points: ^1.0.0
   firebase_messaging: ^14.7.2
+  image_picker: ^0.8.8
 
 dev_dependencies:
   flutter_test:
