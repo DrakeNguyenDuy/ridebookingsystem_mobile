@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ride_booking_system/application/authentication_service.dart';
 import 'package:ride_booking_system/application/personal_service.dart';
@@ -45,12 +46,16 @@ class _PersonalScreenState extends State<PersonalScreen> {
   void changeAvatar() async {
     final ImagePicker picker = ImagePicker();
     XFile? choosedimage = await picker.pickImage(source: ImageSource.gallery);
-    List<int> imageBytes = await choosedimage!.readAsBytes();
-    String baseimage = base64Encode(imageBytes);
-    personalService.uploadImage(baseimage, idUser).then((res) async {
-      print(res);
+    List<int> bytes = await choosedimage!.readAsBytes();
+    String base64 = base64Encode(bytes);
+    personalService.uploadImage(choosedimage!.path, idUser).then((res) async {
       if (res.statusCode == HttpStatus.ok) {
-        print(res);
+        Fluttertoast.showToast(msg: "Cập nhật ảnh thành công");
+        await SharedPreferences.getInstance()
+            .then((ins) => {ins.setString(Varibales.AVATAR_USER, base64)});
+        setState(() {
+          avatar = base64;
+        });
       }
     });
   }
