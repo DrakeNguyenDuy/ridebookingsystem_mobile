@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -226,21 +227,23 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
     LoadingProgress.start(context);
-    double latidudePick = mapLocation[pick]["latitude"];
-    double longtidudePick = mapLocation[pick]["longtitude"];
-    double latidudeDes = mapLocation[des]["latitude"];
-    double longtidudeDes = mapLocation[des]["longtitude"];
-    double distance = 0;
+    // double latidudePick = mapLocation[pick]["latitude"];
+    // double longtidudePick = mapLocation[pick]["longtitude"];
+    // double latidudeDes = mapLocation[des]["latitude"];
+    // double longtidudeDes = mapLocation[des]["longtitude"];
+    final _random = new Random();
+    double distance = (1 + _random.nextInt(9 - 1)) * 1.0;
     // googleService
     //     .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
     //     .then((res1) async {
     //   print(res1);
     //   if (res1.statusCode == 200) {
     //     final body = jsonDecode(res1.body);
-    //     distance = body["rows"]["elements"]["distance"]["value"] / 1000;
+    //     body["rows"]["elements"]["distance"]["value"];
+    //     // distance = body["rows"]["elements"]["distance"]["value"] / 1000;
     //   }
     // });
-    distance = distance == 0 ? 4.4 : distance;
+    // distance = distance == 0 ? 4.4 : distance;
     mainAppService.getPrice(distance).then((res2) async {
       if (res2.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res2.body);
