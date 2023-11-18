@@ -39,7 +39,6 @@ class MainAppService {
       "customerId": customerId,
       "customerToken": firebaseTokenClient
     });
-    print(body);
     var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.requestRide);
     Map<String, String> header =
         await CommonConfig.headerWithToken().then((value) => value);
@@ -61,6 +60,14 @@ class MainAppService {
     Map<String, String> header =
         await CommonConfig.headerWithToken().then((value) => value);
     final body = jsonEncode({"tripId": tripId, "reason": reason});
+    return await http.post(uri, headers: header, body: body);
+  }
+
+  Future<http.Response> rating(int tripId, double rating) async {
+    var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.rating);
+    Map<String, String> header =
+        await CommonConfig.headerWithToken().then((value) => value);
+    final body = jsonEncode({"tripId": tripId, "rating": rating});
     return await http.post(uri, headers: header, body: body);
   }
 }
