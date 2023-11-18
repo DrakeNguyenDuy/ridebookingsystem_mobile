@@ -123,7 +123,7 @@ class _TrackingTripScreenState extends State<TrackingTripScreen> {
             (route) => false);
       } else {
         DialogUtils.showDialogNotfication(
-            context, "Xảy ra lỗi khi hủy chuyến", Icons.error);
+            context, true, "Xảy ra lỗi khi hủy chuyến", Icons.error);
       }
     });
   }

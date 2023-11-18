@@ -13,4 +13,5 @@ class UrlSystem {
   static String cancelRide = "$trip/customerCancel";
   static String upload_image = "$api/upload-images";
   static String register = '$personal/register';
+  static String rating = "$trip/rating";
 }

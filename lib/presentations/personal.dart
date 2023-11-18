@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';

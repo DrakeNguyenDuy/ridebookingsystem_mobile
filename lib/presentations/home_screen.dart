@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_progress/loading_progress.dart';
@@ -38,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
   MainAppService mainAppService = MainAppService();
   String pick = "";
   String des = "";
-  bool isOpen = false;
 
   Map<PolylineId, Polyline> polylinesMap = {};
 
@@ -291,9 +291,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       EdgeInsets.symmetric(horizontal: 16.0)),
                   onTap: () {
                     controller.openView();
-                    // setState(() {
-                    //   isOpen = !isOpen;
-                    // });
                   },
                   onChanged: (_) {
                     controller.openView();
@@ -315,71 +312,60 @@ class _HomeScreenState extends State<HomeScreen> {
                     ));
               },
             ),
-            Visibility(
-              // visible: isOpen,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(Icons.arrow_downward, color: ColorPalette.primaryColor),
-                  Icon(
-                    Icons.arrow_downward,
-                    color: ColorPalette.primaryColor,
-                  )
-                ],
-              ),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(Icons.arrow_downward, color: ColorPalette.primaryColor),
+                Icon(
+                  Icons.arrow_downward,
+                  color: ColorPalette.primaryColor,
+                )
+              ],
             ),
-            Visibility(
-              // visible: isOpen,
-              child: SearchAnchor(
-                builder: (BuildContext context, SearchController controller) {
-                  return SearchBar(
-                    hintText: "Điểm đến",
-                    controller: controller,
-                    padding: const MaterialStatePropertyAll<EdgeInsets>(
-                        EdgeInsets.symmetric(horizontal: 16.0)),
-                    onTap: () {
-                      controller.openView();
-                    },
-                    onChanged: (_) {
-                      controller.openView();
-                    },
-                    leading: const Icon(Icons.search),
-                  );
-                },
-                suggestionsBuilder:
-                    (BuildContext context, SearchController controller) {
-                  return list.map((e) => ListTile(
-                        leading: const Icon(Icons.location_on),
-                        title: Text(e),
-                        onTap: () {
-                          setState(() {
-                            des = e;
-                            controller.closeView(e);
-                          });
-                        },
-                      ));
-                },
-              ),
+            SearchAnchor(
+              builder: (BuildContext context, SearchController controller) {
+                return SearchBar(
+                  hintText: "Điểm đến",
+                  controller: controller,
+                  padding: const MaterialStatePropertyAll<EdgeInsets>(
+                      EdgeInsets.symmetric(horizontal: 16.0)),
+                  onTap: () {
+                    controller.openView();
+                  },
+                  onChanged: (_) {
+                    controller.openView();
+                  },
+                  leading: const Icon(Icons.search),
+                );
+              },
+              suggestionsBuilder:
+                  (BuildContext context, SearchController controller) {
+                return list.map((e) => ListTile(
+                      leading: const Icon(Icons.location_on),
+                      title: Text(e),
+                      onTap: () {
+                        setState(() {
+                          des = e;
+                          controller.closeView(e);
+                        });
+                      },
+                    ));
+              },
             ),
-            Visibility(
-              // visible: isOpen,
-              child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height / 18,
-                  margin: const EdgeInsets.fromLTRB(ds_1, ds_2 * 2, ds_1, ds_1),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorPalette.primaryColor,
-
-                      // padding: const EdgeInsets.all(15.0),
-                    ),
-                    onPressed: _getPrice,
-                    child: Text(
-                      "Đặt chuyến",
-                      style: MainStyle.textStyle5,
-                    ),
-                  )),
-            )
+            Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height / 18,
+                margin: const EdgeInsets.fromLTRB(ds_1, ds_2 * 2, ds_1, ds_1),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorPalette.primaryColor,
+                  ),
+                  onPressed: _getPrice,
+                  child: Text(
+                    "Đặt chuyến",
+                    style: MainStyle.textStyle5,
+                  ),
+                ))
           ],
         ),
         body: _currentLocation == null
@@ -423,10 +409,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (res.statusCode == HttpStatus.ok) {
         // final body = jsonDecode(res.body);
         DialogUtils.showDialogNotfication(
-            context, "Bạn đã đặt xe thành công", Icons.done);
+            context, false, "Bạn đã đặt xe thành công", Icons.done);
       } else {
         DialogUtils.showDialogNotfication(
-            context, "Đặt xe không thành công", Icons.error);
+            context, true, "Đặt xe không thành công", Icons.error);
       }
     });
   }
