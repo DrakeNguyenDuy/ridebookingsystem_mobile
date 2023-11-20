@@ -278,6 +278,16 @@ class MessageService {
                 style: ButtonStyleHandle.bts_1,
                 onPressed: () {
                   Navigator.pop(context);
+                },
+                child: const Text(
+                  "Bỏ qua",
+                  style: TextStyle(color: ColorPalette.white),
+                ),
+              ),
+              TextButton(
+                style: ButtonStyleHandle.bts_1,
+                onPressed: () {
+                  Navigator.pop(context);
                   rating();
                 },
                 child: const Text(

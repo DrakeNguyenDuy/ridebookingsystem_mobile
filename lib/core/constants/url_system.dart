@@ -8,7 +8,7 @@ class UrlSystem {
   static String getPrice = "$trip/getPrice";
   static String requestRide = "$trip/requestRide";
   static String location = "/location";
-  static String history = '$trip/driver';
+  static String history = '$trip/customer';
   static String updatePersonal = '$personal/update';
   static String cancelRide = "$trip/customerCancel";
   static String upload_image = "$api/upload-images";
