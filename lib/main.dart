@@ -29,9 +29,6 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       supportedLocales: const [Locale("en"), Locale("vi")],
       theme: ThemeData(
-        // bottomSheetTheme: const BottomSheetThemeData(
-        //   backgroundColor: ColorPalette.primaryColor,
-        // ),
         primarySwatch: Colors.blue,
       ),
       home: const FlashScreen(),

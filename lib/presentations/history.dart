@@ -74,9 +74,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           to: itemHistorys[index]["destinationLocation"],
                           price: itemHistorys[index]["price"],
                           rating: itemHistorys[index]["rating"],
-                          driverName: itemHistorys[index]["customer"]["name"],
-                          phoneNumber: itemHistorys[index]["driver"]
-                              ["phoneNumber"],
+                          driverName: itemHistorys[index]["driver"] == null
+                              ? "Không có thông tin"
+                              : itemHistorys[index]["driver"]["name"],
+                          phoneNumber: itemHistorys[index]["driver"] == null
+                              ? "Không có thông tin"
+                              : itemHistorys[index]["driver"]["phoneNumber"],
                           gender: itemHistorys[index]["customer"]["gender"]);
                     })));
   }
