@@ -5,7 +5,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_progress/loading_progress.dart';
@@ -222,8 +221,17 @@ class _HomeScreenState extends State<HomeScreen> {
   //get price by distance
   void _getPrice() async {
     if (des.isEmpty || pick.isEmpty) {
-      Fluttertoast.showToast(
-          msg: "Điểm đến và điểm đi không được trống", webPosition: "top");
+      // Fluttertoast.showToast(
+      //     msg: "Điểm đến và điểm đi không được trống", webPosition: "top");
+      DialogUtils.showDialogNotfication(context, true,
+          "Điểm đến và điểm đi không được trống", Icons.warning_amber);
+      return;
+    }
+    if (des == pick) {
+      // Fluttertoast.showToast(
+      //     msg: "Điểm đến và điểm đi không được trống", webPosition: "top");
+      DialogUtils.showDialogNotfication(context, true,
+          "Điểm đi và điểm đến không được trùng nhau", Icons.warning_amber);
       return;
     }
     LoadingProgress.start(context);
