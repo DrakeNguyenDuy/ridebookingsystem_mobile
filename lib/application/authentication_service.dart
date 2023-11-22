@@ -20,8 +20,8 @@ class AuthenticationService {
     return await http.post(uri, headers: CommonConfig.header, body: body);
   }
 
-  Future<http.Response> register(String fullName, bool gender, String email,
-      String phoneNumber, String address, String password) async {
+  Future<http.Response> register(String fullName, String citizenId, bool gender,
+      String email, String phoneNumber, String address, String password) async {
     var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.register);
     final body = jsonEncode({
       "name": fullName,
@@ -29,7 +29,8 @@ class AuthenticationService {
       "phoneNumber": phoneNumber,
       "email": email,
       "address": address,
-      "password": password
+      "password": password,
+      "citizenId ": citizenId
     });
     return await http.post(uri, headers: CommonConfig.header, body: body);
   }

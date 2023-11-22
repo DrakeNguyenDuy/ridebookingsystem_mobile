@@ -22,6 +22,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final fullnameController = TextEditingController();
+  final citizenIdController = TextEditingController();
   final phoneNumberController = TextEditingController();
   final emailController = TextEditingController();
   final addressController = TextEditingController();
@@ -37,6 +38,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _register() async {
     var fullName = fullnameController.text;
+    var citizenId = citizenIdController.text;
     var phoneNumber = phoneNumberController.text;
     var email = emailController.text;
     var address = addressController.text;
@@ -47,12 +49,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email == "" ||
         address == "" ||
         password == "" ||
+        citizenId == "" ||
         genderSelected == "") {
       Fluttertoast.showToast(msg: "Các ô giá trị cần phải điển đầy đủ");
     }
     LoadingProgress.start(context);
     authenticationService
-        .register(fullName, gender, email, phoneNumber, address, password)
+        .register(
+            fullName, citizenId, gender, email, phoneNumber, address, password)
         .then((res) async {
       if (res.statusCode == HttpStatus.ok) {
         LoadingProgress.stop(context);
@@ -142,6 +146,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: addressController,
                   ),
                   TextFieldWidget(
+                    nameLable: "CCCD/CMND",
+                    controller: citizenIdController,
+                  ),
+                  TextFieldWidget(
                     nameLable: "Mật khẩu",
                     controller: passwordController,
                     typePassword: true,
@@ -189,6 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     addressController.dispose();
     phoneNumberController.dispose();
     emailController.dispose();
+    citizenIdController.dispose();
     super.dispose();
   }
 }
