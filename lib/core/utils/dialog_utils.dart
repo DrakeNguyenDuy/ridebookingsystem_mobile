@@ -26,7 +26,7 @@ class DialogUtils {
                     ? "Lỗi"
                     : message == "Cảm ơn bạn đã đánh giá"
                         ? "Thật Tuyệt"
-                        : "Chúc mừng",
+                        : "Thông Báo",
                 style: const TextStyle(fontSize: 25)),
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
