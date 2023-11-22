@@ -415,7 +415,12 @@ class _HomeScreenState extends State<HomeScreen> {
             price, "Làm ơn đến sớm", customerId!, firebaseToken!)
         .then((res) async {
       if (res.statusCode == HttpStatus.ok) {
-        // final body = jsonDecode(res.body);
+        final body = jsonDecode(res.body);
+        if (body["message"] == "Failed") {
+          DialogUtils.showDialogNotfication(
+              context, false, body["data"], Icons.message);
+          return;
+        }
         DialogUtils.showDialogNotfication(
             context, false, "Bạn đã đặt xe thành công", Icons.done);
       } else {
