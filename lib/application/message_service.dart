@@ -140,6 +140,8 @@ class MessageService {
                 sizedBox,
                 renderText("Điểm trả", des),
                 sizedBox,
+                renderText("Số điện thoại tài xế", phoneNumber),
+                sizedBox,
                 RichText(
                   text: TextSpan(
                     text: 'Gía: ',
