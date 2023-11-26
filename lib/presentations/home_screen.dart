@@ -34,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final double zoom = 16.0;
   late GoogleMapController mapController;
   final Location _locationController = Location();
+  final noteController = TextEditingController();
   GoogleService googleService = GoogleService();
   MainAppService mainAppService = MainAppService();
   String pick = "";
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<PolylineId, Polyline> polylinesMap = {};
 
   Map<String, dynamic> mapLocation = {};
+  Map<String, dynamic> mapLocationDes = {};
 
   final _messagingService = MessageService();
 
@@ -50,7 +52,14 @@ class _HomeScreenState extends State<HomeScreen> {
   late LatLng pickLat;
   late LatLng desLat;
 
-  List<String> list = <String>[];
+  List<dynamic> list = <dynamic>[];
+  List<dynamic> listDes = <dynamic>[];
+
+  double latidudePick = 0;
+  double longtidudePick = 0;
+  double latidudeDes = 0;
+  double longtidudeDes = 0;
+  double distance = 0;
 
   final Completer<GoogleMapController> _mapControllerCompleter =
       Completer<GoogleMapController>();
@@ -63,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getAllLocation();
+    // getAllLocation();
     getLocation().then((_) => getPolyPoint()
         .then((coordinates) => {generatePolylineFromPoints(coordinates)}));
     _messagingService.init();
@@ -187,7 +196,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: ds_1),
+                TextField(
+                  controller: noteController,
+                  decoration: const InputDecoration(
+                    hintText: "Ghi chú",
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(ds_3)),
+                      borderSide: BorderSide(
+                          width: ds_0, color: ColorPalette.primaryColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(ds_3)),
+                      borderSide: BorderSide(
+                          width: ds_0, color: ColorPalette.primaryColor),
+                    ),
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: ds_1),
                 RichText(
                   textAlign: TextAlign.left,
                   text: TextSpan(
@@ -221,37 +248,56 @@ class _HomeScreenState extends State<HomeScreen> {
   //get price by distance
   void _getPrice() async {
     if (des.isEmpty || pick.isEmpty) {
-      // Fluttertoast.showToast(
-      //     msg: "Điểm đến và điểm đi không được trống", webPosition: "top");
       DialogUtils.showDialogNotfication(context, true,
           "Điểm đến và điểm đi không được trống", Icons.warning_amber);
       return;
     }
     if (des == pick) {
-      // Fluttertoast.showToast(
-      //     msg: "Điểm đến và điểm đi không được trống", webPosition: "top");
       DialogUtils.showDialogNotfication(context, true,
           "Điểm đi và điểm đến không được trùng nhau", Icons.warning_amber);
       return;
     }
     LoadingProgress.start(context);
-    // double latidudePick = mapLocation[pick]["latitude"];
-    // double longtidudePick = mapLocation[pick]["longtitude"];
-    // double latidudeDes = mapLocation[des]["latitude"];
-    // double longtidudeDes = mapLocation[des]["longtitude"];
-    final _random = new Random();
-    double distance = (1 + _random.nextInt(9 - 1)) * 1.0;
-    // googleService
-    //     .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
-    //     .then((res1) async {
-    //   print(res1);
-    //   if (res1.statusCode == 200) {
-    //     final body = jsonDecode(res1.body);
-    //     body["rows"]["elements"]["distance"]["value"];
-    //     // distance = body["rows"]["elements"]["distance"]["value"] / 1000;
-    //   }
-    // });
-    // distance = distance == 0 ? 4.4 : distance;
+    //get detail location pick
+    await googleService.getDetailLocation(mapLocation[pick]).then((res) async {
+      if (res.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res.body);
+        latidudePick = body["result"]["geometry"]["location"]["lat"];
+        longtidudePick = body["result"]["geometry"]["location"]["lng"];
+      } else {
+        LoadingProgress.stop(context);
+        DialogUtils.showDialogNotfication(
+            context, true, "Lỗi khi lấy chi tiết địa điểm", Icons.error);
+      }
+    });
+
+    //get detail location destination
+    await googleService
+        .getDetailLocation(mapLocationDes[des])
+        .then((res) async {
+      if (res.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res.body);
+        latidudeDes = body["result"]["geometry"]["location"]["lat"];
+        longtidudeDes = body["result"]["geometry"]["location"]["lng"];
+      } else {
+        LoadingProgress.stop(context);
+        DialogUtils.showDialogNotfication(
+            context, true, "Lỗi khi lấy chi tiết địa điểm", Icons.error);
+      }
+    });
+
+    //get distance between location pick and destination
+    await googleService
+        .getDistance(latidudePick, longtidudePick, latidudeDes, longtidudeDes)
+        .then((res1) async {
+      if (res1.statusCode == HttpStatus.ok) {
+        final body = jsonDecode(res1.body);
+        final rows = body["rows"];
+        final element = rows.elementAt(0)["elements"];
+        final dis = element.elementAt(0)["distance"];
+        distance = dis["value"] / 1000;
+      }
+    });
     mainAppService.getPrice(distance).then((res2) async {
       if (res2.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res2.body);
@@ -262,21 +308,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void getAllLocation() async {
-    mainAppService.getAllLocation().then((res) async {
+  searchLocation(String name, bool isdes) async {
+    await googleService.searchLocation(name).then((res) async {
       if (res.statusCode == HttpStatus.ok) {
         final body = jsonDecode(res.body);
-        List<dynamic> locations = body["data"];
-        List<String> temp = [];
+        List<dynamic> locations = body["predictions"];
         Map<String, dynamic> tempMap = {};
         for (var i = 0; i < locations.length; i++) {
-          temp.add(locations.elementAt(i)["name"]);
-          tempMap[locations.elementAt(i)["name"]] = locations.elementAt(i);
+          String des = locations.elementAt(i)["description"];
+          String placeId = locations.elementAt(i)["place_id"];
+          // ignore: unnecessary_null_comparison
+          if (placeId != null || placeId.isEmpty) {
+            tempMap[des] = placeId;
+          }
         }
-        setState(() {
-          list = temp;
-          mapLocation = tempMap;
-        });
+        if (isdes) {
+          setState(() {
+            tempMap.addAll(mapLocationDes);
+            mapLocationDes = tempMap;
+          });
+        } else {
+          setState(() {
+            tempMap.addAll(mapLocation);
+            mapLocation = tempMap;
+          });
+        }
       }
     });
   }
@@ -291,6 +347,10 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: Column(
           children: [
             SearchAnchor(
+              viewLeading: ElevatedButton.icon(
+                  onPressed: null,
+                  icon: const Icon(Icons.location_searching_sharp),
+                  label: const Text("Vị trí hiện tại")),
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
                   hintText: "Điểm đi",
@@ -300,21 +360,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     controller.openView();
                   },
-                  onChanged: (_) {
-                    controller.openView();
-                  },
+                  onChanged: (_) {},
                   leading: const Icon(Icons.search),
+                  // trailing: [
+                  //   ElevatedButton.icon(
+                  //       onPressed: null,
+                  //       icon: const Icon(Icons.location_searching_sharp),
+                  //       label: const Text("Vị trí hiện tại"))
+                  // ],
                 );
               },
+              isFullScreen: true,
               suggestionsBuilder:
                   (BuildContext context, SearchController controller) {
-                return list.map((e) => ListTile(
+                String value = controller.value.text;
+                if (value.isNotEmpty) {
+                  searchLocation(value, false);
+                }
+                return mapLocation.keys.map((e) => ListTile(
                       leading: const Icon(Icons.location_on),
-                      title: Text(e),
+                      title: Text(
+                        e,
+                      ),
                       onTap: () {
                         setState(() {
-                          controller.closeView(e);
                           pick = e;
+                          // mapLocation.clear();
+                          controller.closeView(e);
                         });
                       },
                     ));
@@ -341,19 +413,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller.openView();
                   },
                   onChanged: (_) {
-                    controller.openView();
+                    // controller.openView();
                   },
                   leading: const Icon(Icons.search),
                 );
               },
+              isFullScreen: true,
               suggestionsBuilder:
                   (BuildContext context, SearchController controller) {
-                return list.map((e) => ListTile(
+                String value = controller.value.text;
+                if (value.isNotEmpty) {
+                  searchLocation(value, true);
+                }
+                return mapLocationDes.keys.map((e) => ListTile(
                       leading: const Icon(Icons.location_on),
-                      title: Text(e),
+                      title: Text(
+                        e,
+                      ),
                       onTap: () {
                         setState(() {
                           des = e;
+                          // mapLocationDes.clear();
                           controller.closeView(e);
                         });
                       },
@@ -384,18 +464,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   target: _currentLocation!,
                   zoom: zoom,
                 ),
-                // markers: pickLat!=null && desLat!=null  {
-                //   Marker(
-                //     markerId: const MarkerId("location2"),
-                //     position: pickLat,
-                //     icon: BitmapDescriptor.defaultMarker,
-                //   ),
-                //   Marker(
-                //     markerId: const MarkerId("location1"),
-                //     position: desLat,
-                //     icon: BitmapDescriptor.defaultMarkerWithHue(2),
-                //   ),
-                // },
+                markers: {
+                  Marker(
+                    markerId: const MarkerId("locationCustomerCurrently"),
+                    position: _currentLocation!,
+                    icon: BitmapDescriptor.defaultMarker,
+                  ),
+                },
                 polylines: Set<Polyline>.of(polylinesMap.values),
               ),
       ),
@@ -403,29 +478,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void requestRide(double price) async {
-    double latidudePick = mapLocation[pick]["latitude"];
-    double longtidudePick = mapLocation[pick]["longtitude"];
-    double latidudeDes = mapLocation[des]["latitude"];
-    double longtidudeDes = mapLocation[des]["longtitude"];
     final SharedPreferences sp = await SharedPreferences.getInstance();
     String? firebaseToken = sp.getString(Varibales.TOKEN_FIREBASE);
     int? customerId = sp.getInt(Varibales.CUSTOMER_ID);
     mainAppService
         .requestRide(latidudePick, longtidudePick, latidudeDes, longtidudeDes,
-            price, "Làm ơn đến sớm", customerId!, firebaseToken!)
+            price, noteController.text, customerId!, firebaseToken!, pick, des)
         .then((res) async {
+      final body = jsonDecode(res.body);
       if (res.statusCode == HttpStatus.ok) {
-        final body = jsonDecode(res.body);
         if (body["message"] == "Failed") {
           DialogUtils.showDialogNotfication(
               context, false, body["data"], Icons.message);
           return;
         }
+        mapLocation.clear();
+        mapLocationDes.clear();
         DialogUtils.showDialogNotfication(
             context, false, "Bạn đã đặt xe thành công", Icons.done);
       } else {
         DialogUtils.showDialogNotfication(
-            context, true, "Đặt xe không thành công", Icons.error);
+            context, true, "Đã xãy ra lỗi", Icons.error);
       }
     });
   }
