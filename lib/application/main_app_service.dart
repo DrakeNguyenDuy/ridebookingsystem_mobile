@@ -27,7 +27,9 @@ class MainAppService {
       double price,
       String note,
       int customerId,
-      String firebaseTokenClient) async {
+      String firebaseTokenClient,
+      String pick,
+      String des) async {
     final body = jsonEncode({
       "pickupLocation": {"latitude": pickLatitude, "longitude": pickLongtidude},
       "destinationLocation": {
@@ -37,7 +39,9 @@ class MainAppService {
       "price": price,
       "notes": note,
       "customerId": customerId,
-      "customerToken": firebaseTokenClient
+      "customerToken": firebaseTokenClient,
+      "namePickUpLocation": pick,
+      "nameDestination": des
     });
     var uri = Uri.http(CommonConfig.ipAddress, UrlSystem.requestRide);
     Map<String, String> header =

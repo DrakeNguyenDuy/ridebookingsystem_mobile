@@ -10,4 +10,18 @@ class GoogleService {
     var uri = Uri.parse(path);
     return await http.get(uri);
   }
+
+  Future<http.Response> searchLocation(String name) async {
+    String path =
+        "https://maps.googleapis.com/maps/api/place/queryautocomplete/json?input=$name&key=${CommonConfig.API_GOOGLE_KEY}";
+    var uri = Uri.parse(path);
+    return await http.get(uri);
+  }
+
+  Future<http.Response> getDetailLocation(String placeId) async {
+    String path =
+        "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=${CommonConfig.API_GOOGLE_KEY}";
+    var uri = Uri.parse(path);
+    return await http.get(uri);
+  }
 }
