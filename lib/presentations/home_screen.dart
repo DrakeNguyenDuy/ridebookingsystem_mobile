@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_progress/loading_progress.dart';
 import 'package:location/location.dart';
@@ -72,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // getAllLocation();
     getLocation().then((_) => getPolyPoint()
         .then((coordinates) => {generatePolylineFromPoints(coordinates)}));
     _messagingService.init();
@@ -347,10 +344,10 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: Column(
           children: [
             SearchAnchor(
-              viewLeading: ElevatedButton.icon(
-                  onPressed: null,
-                  icon: const Icon(Icons.location_searching_sharp),
-                  label: const Text("Vị trí hiện tại")),
+              // viewLeading: ElevatedButton.icon(
+              //     onPressed: null,
+              //     icon: const Icon(Icons.location_searching_sharp),
+              //     label: const Text("Vị trí hiện tại")),
               builder: (BuildContext context, SearchController controller) {
                 return SearchBar(
                   hintText: "Điểm đi",
@@ -362,12 +359,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   onChanged: (_) {},
                   leading: const Icon(Icons.search),
-                  // trailing: [
-                  //   ElevatedButton.icon(
-                  //       onPressed: null,
-                  //       icon: const Icon(Icons.location_searching_sharp),
-                  //       label: const Text("Vị trí hiện tại"))
-                  // ],
                 );
               },
               isFullScreen: true,
@@ -385,8 +376,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         setState(() {
                           pick = e;
-                          // mapLocation.clear();
                           controller.closeView(e);
+                          // controller.clear();
                         });
                       },
                     ));
@@ -433,8 +424,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         setState(() {
                           des = e;
-                          // mapLocationDes.clear();
                           controller.closeView(e);
+                          // controller.clear();
                         });
                       },
                     ));
@@ -492,8 +483,8 @@ class _HomeScreenState extends State<HomeScreen> {
               context, false, body["data"], Icons.message);
           return;
         }
-        mapLocation.clear();
-        mapLocationDes.clear();
+        // mapLocation.clear();
+        // mapLocationDes.clear();
         DialogUtils.showDialogNotfication(
             context, false, "Bạn đã đặt xe thành công", Icons.done);
       } else {
